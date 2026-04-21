@@ -342,7 +342,7 @@
 
 <script>
   // ⚠️ REEMPLAZÁ esta URL con la de tu Apps Script desplegado
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpoAAv2Y40nsh6rpayoVS9LfQo5oRKmSYhYJT9-vK9O4dPRDnwA62kFNXEyCHvSDg/exec";
+  const SCRIPT_URL = "https://fortizquirno-maker.github.io/medidores-lacandela/";
 
   const UMBRAL_ALTO = 1.5;
   const UMBRAL_MUY_ALTO = 3.0;
@@ -352,7 +352,7 @@
   let fotoDataUrl = null;
 
   window.onload = () => {
-    if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxpoAAv2Y40nsh6rpayoVS9LfQo5oRKmSYhYJT9-vK9O4dPRDnwA62kFNXEyCHvSDg/exec") {
+    if (SCRIPT_URL === "https://fortizquirno-maker.github.io/medidores-lacandela/") {
       document.getElementById('apiNotice').classList.add('show');
     }
   };
@@ -541,7 +541,7 @@
     document.getElementById('fotoConfirm').style.display = 'none';
     document.getElementById('formCard').style.display = 'block';
 
-    if (SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbxpoAAv2Y40nsh6rpayoVS9LfQo5oRKmSYhYJT9-vK9O4dPRDnwA62kFNXEyCHvSDg/exec") {
+    if (SCRIPT_URL !== "https://fortizquirno-maker.github.io/medidores-lacandela/") {
       document.getElementById('apiNotice').style.display = 'none';
     }
   }
