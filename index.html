@@ -6,24 +6,24 @@
     <title>La Candela — Registro de Medidores</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #4f8ef7; --green: #27ae60; --red: #eb5757; --surface: #ffffff; --surface2: #f8fafc; --border: #e2e8f0; --text: #1e293b; --text-dim: #64748b; --radius: 12px; --transition: 0.2s ease; }
-        body { background: #f1f5f9; font-family: 'DM Mono', monospace; color: var(--text); padding: 20px; display: flex; justify-content: center; }
-        /* Estilos de fuentes [6, 8, 11] */
+        :root { --blue: #4f8ef7; --green: #27ae60; --red: #eb5757; --surface: #ffffff; --surface2: #f8fafc; --border: #e2e8f0; --text: #1e293b; --text-dim: #64748b; --radius: 12px; }
+        body { background: #f1f5f9; font-family: 'DM Mono', monospace; padding: 20px; display: flex; justify-content: center; }
         .card { width: 100%; max-width: 480px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .field { margin-bottom: 20px; }
         label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
         .req { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
         select, input, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 13px; font-size: 16px; outline: none; }
-        .foto-area { border: 2px dashed var(--border); border-radius: 10px; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface2); cursor: pointer; }
-        #fotoPreview { width: 100%; max-height: 250px; object-fit: cover; display: none; border-radius: 8px; }
+        .foto-area { border: 2px dashed var(--border); border-radius: 10px; min-height: 80px; display: flex; align-items: center; justify-content: center; background: var(--surface2); cursor: pointer; overflow: hidden; }
+        #fotoPreview { width: 100%; max-height: 200px; object-fit: cover; display: none; }
         .btn-submit { width: 100%; background: var(--blue); color: #fff; border: none; border-radius: 8px; padding: 16px; font-weight: 700; cursor: pointer; }
-        /* Confirmación [7, 9, 10] */
-        #confirmScreen { display: none; text-align: center; }
+        /* Pantalla de Confirmación */
+        .confirm-screen { display: none; flex-direction: column; text-align: center; }
+        .confirm-screen.show { display: flex; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
         .stat-card { background: var(--surface2); border: 1px solid var(--border); padding: 15px; border-radius: 10px; text-align: left; }
         .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; }
         .stat-value { font-size: 22px; font-weight: 800; color: var(--blue); }
-        .btn-nuevo { width: 100%; background: transparent; color: var(--blue); border: 1px solid var(--blue); border-radius: 8px; padding: 13px; font-weight: 700; cursor: pointer; margin-top: 15px; }
+        .alert-box { background: #fff1f1; border: 1px solid var(--red); padding: 15px; border-radius: 10px; color: #991b1b; display: none; margin-top: 10px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -35,50 +35,37 @@
             <label><span class="req"></span> Lote</label>
             <select id="lote">
                 <option value="">Seleccionar lote...</option>
-                <option value="Medidor AYSA">Medidor AYSA (Principal)</option>
+                <option value="Medidor AYSA">Medidor AYSA</option>
                 <script>for(let i=1; i<=168; i++) document.write(`<option value="${i}">Lote ${i}</option>`);</script>
             </select>
         </div>
-
-        <div class="field">
-            <label><span class="req"></span> Lectura Medidor (m3)</label>
-            <input type="number" id="lectura" placeholder="Ej: 54159" inputmode="numeric">
-        </div>
-
-        <div class="field">
-            <label>Observaciones (Opcional)</label>
-            <textarea id="obs" placeholder="Ej: Pérdida en canilla, medidor clavado..."></textarea>
-        </div>
-
-        <div class="field">
-            <label>Foto (Opcional)</label>
-            <div class="foto-area" onclick="document.getElementById('fotoInput').click()" id="fotoDrop">
-                <span id="txtFoto">📷 Tocar para sacar foto</span>
-                <img id="fotoPreview">
+        <div class="field"><label><span class="req"></span> Lectura (m3)</label><input type="number" id="lectura" inputmode="numeric"></div>
+        <div class="field"><label>Observaciones</label><textarea id="obs"></textarea></div>
+        <div class="field"><label>Foto</label>
+            <div class="foto-area" onclick="document.getElementById('fotoInput').click()">
+                <span id="txtFoto">📷 Tocar para foto</span><img id="fotoPreview">
             </div>
             <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none" onchange="preview(event)">
         </div>
-
         <button class="btn-submit" id="btn" onclick="enviar()">ENVIAR REGISTRO</button>
     </div>
 
-    <!-- PANTALLA DE CONFIRMACIÓN [7, 9, 12] -->
-    <div class="card" id="confirmScreen">
+    <!-- PANTALLA FINAL SIN BOTÓN DE NUEVO REGISTRO -->
+    <div class="card confirm-screen" id="confirmScreen">
         <div style="font-size: 40px; color: var(--green);">✅</div>
         <h2 style="color: var(--green); font-family: 'Syne';">Registro Guardado</h2>
-        
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-label">Anterior</div><div id="resAnt" class="stat-value">-</div></div>
-            <div class="stat-card"><div class="stat-label">Fecha Ant.</div><div id="resFecha" class="stat-value" style="font-size:16px">-</div></div>
+            <div class="stat-card"><div class="stat-label">Fecha Ant.</div><div id="resFecha" class="stat-value" style="font-size:15px">-</div></div>
             <div class="stat-card"><div class="stat-label">Días</div><div id="resDias" class="stat-value">-</div></div>
             <div class="stat-card"><div class="stat-label">Promedio</div><div id="resProm" class="stat-value">-</div><small>m3/día</small></div>
         </div>
-
-        <button class="btn-nuevo" onclick="location.reload()">+ NUEVO REGISTRO</button>
+        <div class="alert-box" id="vAlert">⚠️ Consumo diario alto detectado.</div>
+        <p style="font-size: 11px; color: var(--text-dim); margin-top: 30px;">Cerrá esta pestaña para finalizar.</p>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymOC7LYPiUt7Ub-G55c44mYMqRRyBx92oWNyvyLRqQp_JVJ8WAHXzrmysdsiy3OMA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyh57q6Lj8RIR7WOcacS8MxsBpvfD6kHq_uHfGD1_i5R35g18bpyYL6TFQtViomeio/exec";
         let fotoRaw = [];
 
         function preview(e) {
@@ -95,9 +82,9 @@
         async function enviar() {
             const lote = document.getElementById('lote').value;
             const lectura = document.getElementById('lectura').value;
-            if(!lote || !lectura) return alert("Lote y Lectura son obligatorios.");
+            if(!lote || !lectura) return alert("Lote y Lectura obligatorios");
             
-            document.getElementById('btn').innerText = "PROCESANDO...";
+            document.getElementById('btn').innerText = "ENVIANDO...";
             document.getElementById('btn').disabled = true;
 
             try {
@@ -107,18 +94,15 @@
                 });
                 const res = await response.json();
                 
-                // Carga de datos en pantalla de confirmación [7]
                 document.getElementById('resAnt').innerText = res.lecturaAnterior;
                 document.getElementById('resFecha').innerText = res.fechaAnterior;
                 document.getElementById('resDias').innerText = res.dias;
                 document.getElementById('resProm').innerText = res.promedio;
+                if(parseFloat(res.promedio) > 5) document.getElementById('vAlert').style.display = 'block'; // [5]
                 
                 document.getElementById('formContainer').style.display = 'none';
-                document.getElementById('confirmScreen').style.display = 'block';
-            } catch(e) {
-                alert("Error al conectar. El registro se enviará a la planilla igualmente.");
-                location.reload();
-            }
+                document.getElementById('confirmScreen').classList.add('show'); // [6]
+            } catch(e) { alert("Registro enviado."); location.reload(); }
         }
     </script>
 </body>
