@@ -6,69 +6,136 @@
     <title>La Candela — Carga de lecturas</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --blue: #4f8ef7; --green: #27ae60; --red: #eb5757; --surface: #ffffff; --border: #e2e8f0; --text: #1e293b; --text-dim: #64748b; --radius: 12px; }
-        body { background: #f1f5f9; font-family: 'DM Mono', monospace; padding: 20px; display: flex; justify-content: center; }
+        :root {
+            --blue: #4f8ef7; --blue-dim: rgba(79,142,247,0.1);
+            --green: #27ae60; --green-dim: #ecfdf5;
+            --red: #eb5757; --red-dim: #fff1f1;
+            --yellow: #f2994a; --yellow-dim: #fff8f1;
+            --surface: #ffffff; --surface2: #f8fafc;
+            --border: #e2e8f0; --text: #1e293b;
+            --text-dim: #64748b; --text-muted: #94a3b8;
+            --radius: 12px; --transition: 0.2s ease;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f1f5f9; font-family: 'DM Mono', monospace; color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
         .card { width: 100%; max-width: 480px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { margin-bottom: 24px; }
+        .header h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+        
         .field { margin-bottom: 20px; }
-        label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
-        select, input, textarea { width: 100%; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 13px; font-size: 16px; }
-        .foto-area { border: 2px dashed var(--border); border-radius: 10px; min-height: 80px; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; }
-        #fotoPreview { width: 100%; max-height: 200px; object-fit: cover; display: none; border-radius: 8px; }
-        .btn-submit { width: 100%; background: var(--blue); color: #fff; border: none; border-radius: 8px; padding: 16px; font-weight: 700; cursor: pointer; }
-        #confirmScreen { display: none; text-align: center; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .stat-card { background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 10px; }
-        .stat-label { font-size: 10px; color: var(--text-dim); }
-        .stat-value { font-size: 22px; font-weight: 800; color: var(--blue); }
-        .alert-box { background: #fff1f1; border: 1px solid var(--red); padding: 15px; border-radius: 10px; color: #991b1b; display: none; font-size: 13px; margin-top: 10px; }
+        .field label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+        .req { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); display: inline-block; }
+
+        select, input, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 16px; padding: 13px 14px; outline: none; }
+        textarea { resize: vertical; min-height: 76px; font-size: 14px; }
+        
+        .foto-area { width: 100%; border: 2px dashed var(--border); border-radius: 10px; cursor: pointer; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface2); padding: 20px; gap: 10px; }
+        .foto-area.has-foto { border-style: solid; border-color: var(--green); padding: 0; }
+        #fotoPreview { width: 100%; max-height: 260px; object-fit: cover; display: none; border-radius: 8px; }
+
+        .btn-submit { width: 100%; background: var(--blue); color: #fff; border: none; border-radius: 8px; padding: 16px; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        
+        /* Confirmación y Estadísticas */
+        .confirm-screen { width: 100%; max-width: 480px; display: none; flex-direction: column; gap: 14px; }
+        .confirm-screen.show { display: flex; }
+        .confirm-header { background: var(--green-dim); border: 1px solid var(--green); border-radius: var(--radius); padding: 24px; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+        .stat-card.full { grid-column: 1 / -1; }
+        .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--blue); }
+        
+        .alert-box { background: var(--red-dim); border: 1px solid var(--red); border-radius: var(--radius); padding: 16px; display: none; align-items: flex-start; gap: 12px; }
+        .alert-box.show { display: flex; }
     </style>
 </head>
 <body>
+
     <div class="card" id="formContainer">
-        <h2 style="font-family: 'Syne'; margin-bottom: 20px;">💧 Medidores</h2>
+        <div class="header">
+            <h1>💧 Medidores</h1>
+            <p>La Candela — Registro de Lecturas</p>
+        </div>
+
         <div class="field">
-            <label>Lote</label>
+            <label><span class="req"></span> Lote</label>
             <select id="lote">
-                <option value="">Seleccionar...</option>
-                <option value="Medidor AYSA">Medidor AYSA</option>
-                <script>for(let i=1; i<=168; i++) document.write(`<option value="${i}">Lote ${i}</option>`);</script>
+                <option value="">Seleccionar lote...</option>
+                <option value="Medidor AYSA">Medidor AYSA (Principal)</option>
+                <script>
+                    for(let i=1; i<=168; i++) {
+                        if(i !== 143) document.write(`<option value="${i}">Lote ${i}</option>`);
+                    }
+                </script>
             </select>
         </div>
-        <div class="field"><label>Lectura (m3)</label><input type="number" id="lectura" inputmode="numeric"></div>
-        <div class="field"><label>Observaciones</label><textarea id="observaciones"></textarea></div>
-        <div class="field"><label>Foto</label>
-            <div class="foto-area" onclick="document.getElementById('fotoInput').click()">
-                <span id="txtFoto">📷 Sacar Foto</span><img id="fotoPreview">
+
+        <div class="field">
+            <label><span class="req"></span> Lectura Actual (m3)</label>
+            <input type="number" id="lectura" placeholder="00000" inputmode="numeric">
+        </div>
+
+        <div class="field">
+            <label>Observaciones (Opcional)</label>
+            <textarea id="observaciones" placeholder="Ej: Pérdida, medidor clavado..."></textarea>
+        </div>
+
+        <div class="field">
+            <label>Foto (Opcional)</label>
+            <div class="foto-area" onclick="document.getElementById('fotoInput').click()" id="fotoDrop">
+                <div id="placeholder">📷 Tocar para sacar foto</div>
+                <img id="fotoPreview">
             </div>
             <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none" onchange="preview(event)">
         </div>
-        <button class="btn-submit" id="btn" onclick="enviar()">ENVIAR REGISTRO</button>
+
+        <button class="btn-submit" id="btnEnviar" onclick="enviar()">ENVIAR REGISTRO</button>
     </div>
 
-    <div class="card" id="confirmScreen">
-        <h2 style="color:var(--green)">✅ Registro Guardado</h2>
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Anterior</div><div class="stat-value" id="vAnt">-</div></div>
-            <div class="stat-card"><div class="stat-label">Días</div><div class="stat-value" id="vDias">-</div></div>
-            <div class="stat-card" style="grid-column: 1/3;"><div class="stat-label">Promedio Diario</div><div class="stat-value" id="vProm">-</div></div>
+    <!-- PANTALLA DE CONFIRMACIÓN -->
+    <div class="confirm-screen" id="confirmScreen">
+        <div class="confirm-header">
+            <div style="font-size: 38px;">✅</div>
+            <h2 style="color: var(--green);">Registro Guardado</h2>
         </div>
-        <div class="alert-box" id="vAlert">⚠️ ALERTA: Consumo diario alto. Revisar posibles fugas.</div>
-        <button class="btn-submit" style="background:none; color:var(--blue); border:1px solid var(--blue); margin-top:20px;" onclick="location.reload()">+ NUEVO REGISTRO</button>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Anterior</div>
+                <div class="stat-value" id="vAnt">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Días</div>
+                <div class="stat-value" id="vDias">-</div>
+            </div>
+            <div class="stat-card full">
+                <div class="stat-label">Consumo Diario</div>
+                <div class="stat-value" id="vProm">- <small style="font-size:11px; color:var(--text-muted)">m3/día</small></div>
+            </div>
+        </div>
+
+        <div class="alert-box" id="vAlert">
+            <div style="font-size: 20px;">⚠️</div>
+            <p style="font-size: 13px; color: #991b1b; font-weight: 600;">Consumo diario alto detectado. Verificar posibles fugas.</p>
+        </div>
+        
+        <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 10px;">Cerrá esta pestaña para finalizar.</p>
     </div>
 
     <script>
-        // PEGA AQUÍ TU NUEVA URL DE APPS SCRIPT
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXgmZdGTAX_jwXuAICbY2axtWU9UKfiCMBWVAQCTExWBES9G7oTh334m0Ti7_TtmE/exec";
-        let fotoData = [];
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2cvnCn1bfiNg8zxq28-wB-n4yBKbfS5frLDZhhEHp1axHG9W3mKKxcJWNfADI2Xs/exec";
+        let fotoBase64 = [];
 
         function preview(e) {
             const reader = new FileReader();
-            reader.onload = () => { 
+            reader.onload = () => {
                 document.getElementById('fotoPreview').src = reader.result;
                 document.getElementById('fotoPreview').style.display = 'block';
-                document.getElementById('txtFoto').style.display = 'none';
-                fotoData = reader.result.split(',');
-            };
+                document.getElementById('placeholder').style.display = 'none';
+                document.getElementById('fotoDrop').classList.add('has-foto');
+                fotoBase64 = reader.result.split(',');
+            }
             reader.readAsDataURL(e.target.files);
         }
 
@@ -76,26 +143,30 @@
             const lote = document.getElementById('lote').value;
             const lectura = document.getElementById('lectura').value;
             if(!lote || !lectura) return alert("Lote y Lectura son obligatorios.");
-            
-            document.getElementById('btn').innerText = "ENVIANDO...";
-            document.getElementById('btn').disabled = true;
+
+            document.getElementById('btnEnviar').innerText = "PROCESANDO...";
+            document.getElementById('btnEnviar').disabled = true;
 
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({lote, lectura, observaciones: document.getElementById('observaciones').value, foto: fotoData})
+                    body: JSON.stringify({
+                        lote, lectura, 
+                        observaciones: document.getElementById('observaciones').value, 
+                        foto: fotoBase64
+                    })
                 });
-                
                 const res = await response.json();
+                
                 document.getElementById('vAnt').innerText = res.lecturaAnterior;
                 document.getElementById('vDias').innerText = res.dias;
-                document.getElementById('vProm').innerText = res.promedio + " m3";
-                if(parseFloat(res.promedio) > 5) document.getElementById('vAlert').style.display = 'block';
-                
+                document.getElementById('vProm').innerText = res.promedio;
+                if(parseFloat(res.promedio) > 5) document.getElementById('vAlert').classList.add('show');
+
                 document.getElementById('formContainer').style.display = 'none';
-                document.getElementById('confirmScreen').style.display = 'flex';
+                document.getElementById('confirmScreen').classList.add('show');
             } catch(e) {
-                alert("Guardado. Recargando para nuevo registro.");
+                alert("Error de conexión. El registro se enviará igualmente a la planilla.");
                 location.reload();
             }
         }
